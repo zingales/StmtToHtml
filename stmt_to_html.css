@@ -1,0 +1,8 @@
+div {
+	padding-left: 5px;
+}
+
+/*some divs types dont need extra padding*/
+.Block {
+	padding-left: 0px;
+}

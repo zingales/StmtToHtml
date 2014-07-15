@@ -29,7 +29,7 @@ private:
 	}
 
 	string open_div(string cls, string data="") {
-		return "<div class="+cls+" "+data+">\n";
+		return "<div class="+cls+" "+data+">";
 	}
 
 	string close_div() {
@@ -295,12 +295,14 @@ public:
 	    }
 
 	    stream << op->name << "(";
+	    stream << open_span("CallArgs");
 	    for (size_t i = 0; i < op->args.size(); i++) {
 	        print(op->args[i]);
 	        if (i < op->args.size() - 1) {
 	            stream << ", ";
 	        }
 	    }
+	    stream << close_span();
     	stream << ")";
 	    stream << close_span();
     }
@@ -459,31 +461,35 @@ public:
 	    stream << close_div();
     }
     void visit(const IfThenElse *op) {
-    // 	stream << open_div("IfThenElse");
-    // 	while (1) {
-    //     stream << "if (" << op->condition << ") {";
-    //     stream << open_div("ThenBody");
-    //     print(op->then_case);
-    //     stream << close_div();
+    	stream << open_div("IfThenElse");
+    	while (1) {
+    	stream << "if (";	
+    	stream << open_span("IfStmt");
+    	print(op->condition);
+        stream << ")";
+        stream << close_span() << "{";
+        stream << open_div("ThenBody");
+        print(op->then_case);
+        stream << close_div();
 
-    //     if (!op->else_case.defined()) {
-    //         break;
-    //     }
+        if (!op->else_case.defined()) {
+            break;
+        }
 
-    //     if (const IfThenElse *nested_if = op->else_case.as<IfThenElse>()) {
-    //         do_indent();
-    //         stream << "} else ";
-    //         op = nested_if;
-    //     } else {
-    //         do_indent();
-    //         stream << "} else {\n";
-    //         indent += 2;
-    //         print(op->else_case);
-    //         indent -= 2;
-    //         break;
-    //     }
-    // }
-    //  stream << close_div();
+        if (const IfThenElse *nested_if = op->else_case.as<IfThenElse>()) {
+            // do_indent();
+            stream << "} else ";
+            op = nested_if;
+        } else {
+            // do_indent();
+            stream << "} else {\n";
+            // indent += 2;
+            print(op->else_case);
+            // indent -= 2;
+            break;
+        }
+    }
+     stream << close_div();
     }
 
     void visit(const Evaluate *op) {
@@ -494,10 +500,15 @@ public:
 
 	StmtToHtml(string filename){
 		stream.open(filename);
+		stream << "<head>";
+		stream <<"<link rel=\"stylesheet\" type=\"text/css\" href=\"stmt_to_html/stmt_to_html.css\">";
+		stream << "<script language=\"javascript\" type=\"text/javascript\" src=\"stmt_to_html/stmt_to_html.js\"></script>";
+		stream << "</head>\n <body>\n";
 	}
 
 	void genereate(Stmt s){
 		print(s);	
+		stream << "</body>";
 		stream.close();
 	}
 
