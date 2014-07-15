@@ -1,15 +1,21 @@
 #ifndef STMT_TO_HTML
 #define STMT_TO_HTML
 
-#include "Halide.h"
 #include <iostream>
 #include <fstream>
+#include "Halide.h"
 
 using namespace Halide;
 using namespace Halide::Internal;
 using std::string;
 
+/*
+	Please note you need to compile this file with the -fno-rtti flag. 
+*/
+
 class StmtToHtml : public IRVisitor {
+
+
 
 private:
 	std::ofstream stream;
@@ -42,7 +48,7 @@ private:
 	    ir.accept(this);
 	}
 
-protected: 
+public: 
 	void visit(const IntImm *op){
 		stream <<  open_span("IntImm") << op->value << close_span();
 	}
@@ -212,7 +218,8 @@ protected:
 	    print(op->b);
 	    stream << ')';
 	    stream << close_span();
-    }
+	}
+    
     void visit(const And *op) {
     	stream << open_span("And");
 	    stream << '(';
@@ -476,24 +483,25 @@ protected:
     //         break;
     //     }
     // }
-
-	   //  stream << close_div();
+    //  stream << close_div();
     }
+
     void visit(const Evaluate *op) {
     	stream << open_div("Evaluate");
    	    print(op->value);
 	    stream << close_div();
     }
 
-public:
 	StmtToHtml(string filename){
 		stream.open(filename);
 	}
 
 	void genereate(Stmt s){
-		s.accept(this);
+		print(s);	
 		stream.close();
 	}
+
+	~StmtToHtml(){}
 };
 
 
