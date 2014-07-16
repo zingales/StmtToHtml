@@ -9,13 +9,12 @@ using namespace Halide;
 using namespace Halide::Internal;
 using std::string;
 
-static const string FOLDER = ".";
+// folder_path to where the js and css are stored. 
+static const string FOLDER_PATH = "stmt_to_html";
 
 /*
 	Please note you need to compile this file with the -fno-rtti flag. 
 	to use please include like so
-	#include "stmt_to_html/StmtToHtml.h"
-
 */
 
 class StmtToHtml : public IRVisitor {
@@ -503,8 +502,8 @@ public:
 	StmtToHtml(string filename){
 		stream.open(filename);
 		stream << "<head>";
-		stream <<"<link rel=\"stylesheet\" type=\"text/css\" href=\""+FOLDER+"/stmt_to_html.css\">";
-		stream << "<script language=\"javascript\" type=\"text/javascript\" src=\""+FOLDER+"/stmt_to_html.js\"></script>";
+		stream <<"<link rel=\"stylesheet\" type=\"text/css\" href=\""+FOLDER_PATH+"/stmt_to_html.css\">";
+		stream << "<script language=\"javascript\" type=\"text/javascript\" src=\""+FOLDER_PATH+"/stmt_to_html.js\"></script>";
 		stream << "</head>\n <body>\n";
 	}
 
@@ -520,10 +519,10 @@ public:
 
 
 /*
-	All files will be stored in stmt_to_html
+	All files will be stored in stmt_to_html 
 */
 void print_to_html(string filename, Stmt s) {
-	StmtToHtml sth(FOLDER+"/"+filename);
+	StmtToHtml sth(filename);
 	sth.genereate(s);
 }
 
