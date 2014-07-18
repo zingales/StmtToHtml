@@ -116,7 +116,7 @@ public:
     }
     void visit(const Sub *op) {
     	stream << open_span("Sub");
-    	 stream << '(';
+    	stream << '(';
 	    print(op->a);
 	    stream << " - ";
 	    print(op->b);
@@ -190,7 +190,7 @@ public:
     	stream << open_span("LT");
         stream << '(';
 	    print(op->a);
-	    stream << " < ";
+	    stream << " &lt ";
 	    print(op->b);
 	    stream << ')';
 	    stream << close_span();
@@ -199,7 +199,7 @@ public:
     	stream << open_span("LE");
         stream << '(';
 	    print(op->a);
-	    stream << " <= ";
+	    stream << " &lt = ";
 	    print(op->b);
 	    stream << ')';
 	    stream << close_span();
@@ -208,7 +208,7 @@ public:
     	stream << open_span("GT");
 	    stream << '(';
 	    print(op->a);
-	    stream << " > ";
+	    stream << " &gt ";
 	    print(op->b);
 	    stream << ')';
 	    stream << close_span();
@@ -217,7 +217,7 @@ public:
     	stream << open_span("GE");
 	    stream << '(';
 	    print(op->a);
-	    stream << " >= ";
+	    stream << " &gt= ";
 	    print(op->b);
 	    stream << ')';
 	    stream << close_span();
@@ -227,7 +227,7 @@ public:
     	stream << open_span("And");
 	    stream << '(';
 	    print(op->a);
-	    stream << " && ";
+	    stream << " &amp&amp ";
 	    print(op->b);
 	    stream << ')';
 	    stream << close_span();
@@ -260,7 +260,8 @@ public:
     }
     void visit(const Load *op) {
     	stream << open_span("Load");
-	    stream << op->name << "[";
+    	print(op->name);
+	    stream << "[";
 	    print(op->index);
 	    stream << "]";
 	    stream << close_span();
@@ -271,12 +272,16 @@ public:
 	    print(op->base);
 	    stream << ", ";
 	    print(op->stride);
-	    stream << ", " << op->width << ")";
+	    stream << ", ";
+	    print(op->width);
+	    stream << ")";
 	    stream << close_span();
     }
     void visit(const Broadcast *op) {
     	stream << open_span("Broadcast");
-	    stream << "x" << op->width << "(";
+	    stream << "x";
+	    print(op->width);
+	    stream << "(";
 	    print(op->value);
 	    stream << ")";
 	    stream << close_span();
@@ -286,18 +291,23 @@ public:
 	    if (op->call_type == Call::Intrinsic) {
 	        if (op->name == Call::extract_buffer_min) {
 	            print(op->args[0]);
-	            stream << ".min[" << op->args[1] << "]";
+	            stream << ".min[";
+	            print(op->args[1]);
+	            steram << "]";
 			    stream << close_span();
 	            return;
 	        } else if (op->name == Call::extract_buffer_max) {
 	            print(op->args[0]);
-	            stream << ".max[" << op->args[1] << "]";
+	            stream << ".max[";
+	            print(op->args[1]);
+	            stream << "]";
 	    		stream << close_span();
 	            return;
 	        }
 	    }
 
-	    stream << op->name << "(";
+		print(op->name);
+	    stream << "(";
 	    stream << open_span("CallArgs");
 	    for (size_t i = 0; i < op->args.size(); i++) {
 	        print(op->args[i]);
@@ -311,7 +321,9 @@ public:
     }
     void visit(const Let *op) {
     	stream << open_span("Let");
-	    stream << "(let " << op->name << " = ";
+	    stream << "(let ";
+	    print(op->name);
+	    stream << " = ";
 	    print(op->value);
 	    stream << " in ";
 	    print(op->body);
@@ -322,7 +334,9 @@ public:
     // Divs
     void visit(const LetStmt *op) {
     	stream << open_div("LetStmt");
-	    stream << "let " << op->name << " = ";
+	    stream << "let ";
+	    print(op->name);
+	    stream << " = ";
 	    print(op->value);
 	    stream << close_div();
     }
@@ -343,7 +357,9 @@ public:
     }
     void visit(const Pipeline *op) {
     	stream << open_div("Produce");
-	    stream << "produce " << op->name << " {";
+	    stream << "produce ";
+	    print(op->name);
+	    stream << " {";
 	    stream << open_div("ProduceBody");
 	   	print(op->produce); 
 	   	stream << close_div();
@@ -351,7 +367,9 @@ public:
 	    stream << close_div();
 	    if (op->update.defined()) {
 	    	stream << open_div("Update");
-	        stream << "update " << op->name << " {";
+	        stream << "update ";
+	        print(op->name);
+	        stream << " {";
 	        stream << open_div("UpdateBody");
 	        print(op->update);
 	        stream << close_div();
@@ -362,7 +380,9 @@ public:
     }
     void visit(const For *op) {
     	stream << open_div("For");
-	    stream << op->for_type << " (" << op->name << ", ";
+	    stream << op->for_type << " (";
+	    print(op->name);
+	    stream << ", ";
 	    print(op->min);
 	    stream << ", ";
 	    print(op->extent);
@@ -375,7 +395,8 @@ public:
     }
     void visit(const Store *op) {
     	stream << open_div("Store");
-   	    stream << op->name << "[";
+    	print(op->name);
+   	    stream << "[";
     	stream << open_span("StoreIndex");
 	    print(op->index);
     	stream << close_span();
@@ -387,7 +408,8 @@ public:
     }
     void visit(const Provide *op) {
     	stream << open_div("Provide");
-		stream << op->name << "(";
+    	print(op->name);
+		stream << "(";
 	    for (size_t i = 0; i < op->args.size(); i++) {
 	        print(op->args[i]);
 	        if (i < op->args.size() - 1) stream << ", ";
@@ -411,7 +433,9 @@ public:
     }
     void visit(const Allocate *op) {
     	stream << open_div("Allocate");
-    	stream << "allocate " << op->name << "[" << op->type;
+    	stream << "allocate ";
+    	print(op->name); 
+    	stream << "[" << op->type;
 	    for (size_t i = 0; i < op->extents.size(); i++) {
 	        stream  << " * ";
 	        print(op->extents[i]);
@@ -428,12 +452,15 @@ public:
     }
     void visit(const Free *op) {
     	stream << open_div("Free");
-	    stream << "free " << op->name;
+	    stream << "free ";
+	    print(op->name);
 	    stream << close_div();
     }
     void visit(const Realize *op) {
     	stream << open_div("Realize");
-	    stream << "realize " << op->name << "(";
+	    stream << "realize ";
+	    print(op->name);
+	    stream << "(";
 	    stream << open_span("RealizeArgs");
 	    for (size_t i = 0; i < op->bounds.size(); i++) {
 	        stream << "[";
