@@ -20,11 +20,15 @@ static const string FOLDER_PATH = "stmt_to_html";
 class StmtToHtml : public IRVisitor {
 
 
+// use just so its easier to access individual elements 
+int id_count;
+
 private:
 	std::ofstream stream;
 
 	string open_span(string cls, string data="") {
-		return "<span class="+cls+" "+data+">";
+		id_count++;
+		return "<span class="+cls+" "+data+" id="+ std::to_string(id_count) +">";
 	}
 
 	string close_span() {
@@ -32,7 +36,8 @@ private:
 	}
 
 	string open_div(string cls, string data="") {
-		return "<div class="+cls+" "+data+">";
+		id_count++;
+		return "<div class="+cls+" "+data+" id="+ std::to_string(id_count) +">";
 	}
 
 	string close_div() {
@@ -60,6 +65,10 @@ public:
     }
     void visit(const StringImm *op){
     	//TODO sanitize the stirng so it doesn't mess with the html
+    	// This would be the proper way to modify string imm
+    	// however this means that ever function name and varaible name would have 
+    	// double quotes surrounding it which is kinda annoying
+    	/*
     	stream << open_span("StringImm");
     	  stream << '"';
 	    for (size_t i = 0; i < op->value.size(); i++) {
@@ -90,7 +99,14 @@ public:
 	            }
 	        }
    		}
-    	stream << '"' << close_span();	
+    	stream << '"';
+    	stream << close_span();	
+    	*/
+
+    	// so we'll do this instead, however the above is waaay safer
+    	stream << open_span("StringImm");
+    	stream << op->value;	
+    	stream << close_span();	
     }
 
     void visit(const Variable *op){
@@ -293,7 +309,7 @@ public:
 	            print(op->args[0]);
 	            stream << ".min[";
 	            print(op->args[1]);
-	            steram << "]";
+	            stream << "]";
 			    stream << close_span();
 	            return;
 	        } else if (op->name == Call::extract_buffer_max) {
@@ -490,34 +506,33 @@ public:
     }
     void visit(const IfThenElse *op) {
     	stream << open_div("IfThenElse");
-    	while (1) {
     	stream << "if (";	
     	stream << open_span("IfStmt");
+    	while (1) {
     	print(op->condition);
         stream << ")";
-        stream << close_span() << "{";
+        stream << close_span() << "{"; // close if (or else if) span
         stream << open_div("ThenBody");
         print(op->then_case);
-        stream << close_div();
+        stream << close_div(); // close thenbody div
 
         if (!op->else_case.defined()) {
             break;
         }
 
         if (const IfThenElse *nested_if = op->else_case.as<IfThenElse>()) {
-            // do_indent();
-            stream << "} else ";
+            stream << "} else if (";
+            stream << open_span("ElseIfStmt");
             op = nested_if;
         } else {
-            // do_indent();
-            stream << "} else {\n";
-            // indent += 2;
+            stream << "} else {";
+            stream << open_div("ElseBody");
             print(op->else_case);
-            // indent -= 2;
+            stream << close_div();
             break;
         }
     }
-     stream << close_div();
+     stream << close_div(); //closing ifthenelse div 
     }
 
     void visit(const Evaluate *op) {
@@ -527,6 +542,7 @@ public:
     }
 
 	StmtToHtml(string filename){
+		id_count = 0;
 		stream.open(filename);
 		stream << "<head>";
 		stream <<"<link rel=\"stylesheet\" type=\"text/css\" href=\""+FOLDER_PATH+"/stmt_to_html.css\">";
